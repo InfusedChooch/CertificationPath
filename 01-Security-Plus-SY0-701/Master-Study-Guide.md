@@ -17,6 +17,67 @@ This guide bridges official CompTIA Security+ theory with practical, real-world 
 
 ---
 
+## Exam Logistics
+
+| Parameter | Value |
+|---|---|
+| Exam code | SY0-701 |
+| Questions | Up to 90 (multiple choice + performance-based) |
+| Time | 90 minutes |
+| Passing score | **750 / 900** |
+| Pricing (US, official store) | $425 voucher / $808 voucher + retake |
+| Voucher validity | ~12 months from purchase, non-refundable |
+| Retake policy | First retake: no wait. Second and beyond: 14-day wait |
+| Delivery | Pearson VUE — in-person or OnVUE remote proctoring |
+| OnVUE requirements | Single monitor, no VPN/VM active, room scan, minimum bandwidth |
+
+---
+
+## Domain 1.0: General Security Concepts (12%)
+
+> This domain is mostly definitional — a cheat sheet covers it faster than deep notes.
+> Read once, then drill with flashcards. Do not over-invest here relative to Domain 4 (28%) and Domain 5 (20%).
+
+### The CIA Triad
+
+Every security decision maps to one or more of these three pillars:
+
+| Pillar | Definition | Homelab Example | Threat That Violates It |
+|---|---|---|---|
+| **Confidentiality** | Only authorized parties can read data | TLS on all external services; Authentik gates internal tools | Eavesdropping, data exfiltration, unencrypted backups |
+| **Integrity** | Data is not altered without authorization | ZFS checksums on TrueNAS; git history; SMART monitoring | Data corruption (NVMe media errors), tampering, MITM |
+| **Availability** | Systems and data are accessible when needed | Proxmox cluster (3 nodes, quorum), dual Pi-hole resolvers | Hardware failure, DDoS, ransomware, misconfiguration |
+
+**Non-repudiation:** A fourth concept closely paired with the CIA triad. It means an action cannot be denied after the fact. Digital signatures provide non-repudiation — a sender cannot deny sending a message signed with their private key. Your Proxmox audit log provides weak non-repudiation (assumes log integrity).
+
+### Authentication Factors
+
+| Factor type | What it proves | Examples |
+|---|---|---|
+| **Something you know** | Knowledge | Password, PIN, security question |
+| **Something you have** | Possession | TOTP app, hardware key (YubiKey), smart card |
+| **Something you are** | Inherence | Fingerprint, face recognition, retina scan |
+| **Somewhere you are** | Location | IP geofencing, GPS, network-based assertion |
+
+**MFA:** Two or more factors from *different categories*. A password + PIN is not MFA — both are "something you know."
+
+**Authentik homelab mapping:** When Authentik requires TOTP after a password, that is MFA: password (know) + TOTP (have). Adding device trust (Tailscale device identity) adds a third factor (location/have).
+
+### Control Categories — Quick Reference
+
+| Type | Acts | Example |
+|---|---|---|
+| Preventive | Before | Firewall, MFA, locks |
+| Detective | During/after | IDS, SIEM, audit logs |
+| Corrective | After | Patch management, restore from backup |
+| Deterrent | Before | Warning banners, visible cameras |
+| Compensating | When primary fails | Fallback auth when biometrics unavailable |
+| Directive | Before | Policies, regulations, training requirements |
+
+See `domain5-grc-gap-notes.md` for the full control type breakdown with homelab examples.
+
+---
+
 ## The 8-Week Study Sprint
 
 ### [ ] Weeks 17–19: Threats, Vulnerabilities, and Mitigations (Domain 2.0)
@@ -99,6 +160,103 @@ The exam expects you to understand the standard incident response lifecycle and 
 4. **Eradication:** Physically replacing the degrading Inland QN450 NVMe drive and rebuilding the datastore.
 5. **Recovery:** Confirming the new drive is healthy and migrating guests back only when stability is proven.
 6. **Lessons Learned:** Evaluating if SMART alerts were configured early enough and if migration priority matched business criticality.
+
+---
+
+## Domain 5.0 GRC Deep Dive: Governance, Risk & Compliance (20%)
+
+> Your primary knowledge gap. Read this section, then read `domain5-grc-gap-notes.md` for worked examples.
+> GRC questions are almost always scenario-based — practice recognizing which framework, formula, or document a scenario is invoking.
+
+### Risk Formulas (will be on the exam)
+
+```
+SLE  = Asset Value (AV) × Exposure Factor (EF)    ← cost of ONE incident
+ALE  = SLE × ARO                                   ← expected annual loss
+ARO  = expected occurrences per year               ← can be a fraction (0.25 = once/4yr)
+```
+
+**Control value calculation:** `ALE_before − ALE_after − Cost_of_control = net value`
+If net value is positive → implement the control.
+
+### NIST CSF 2.0 Functions (one-line each)
+
+| Function | One-line definition |
+|---|---|
+| **Govern** | Set the policy, roles, and risk strategy that everything else runs on |
+| **Identify** | Know what assets and risks exist |
+| **Protect** | Implement controls to prevent incidents |
+| **Detect** | Monitor for incidents when they occur |
+| **Respond** | Act when an incident is confirmed |
+| **Recover** | Restore operations and improve after an incident |
+
+### Framework Comparison
+
+| Framework | Type | Certification? | Best exam trigger phrase |
+|---|---|---|---|
+| **NIST CSF** | Voluntary, outcome-based | No | "flexible risk management framework" |
+| **ISO 27001** | International standard | Yes (audited) | "internationally certified ISMS" |
+| **CIS Controls** | Prioritized technical checklist | No (IG levels) | "specific, ordered security actions" |
+| **PCI-DSS** | Mandatory, payment card | Assessed | "handles credit card data" |
+| **HIPAA** | US law, healthcare | Regulated | "patient health information" |
+| **GDPR** | EU law, privacy | Regulated | "EU personal data" or "right to erasure" |
+
+### Business Documents — When to Choose What
+
+| Scenario | Document |
+|---|---|
+| "Guarantees uptime with financial penalties" | SLA |
+| "Two parties agree to share threat intelligence informally" | MOU |
+| "Company requires vendor confidentiality before sharing architecture" | NDA |
+| "Governs the overall relationship; specific jobs are added later" | MSA |
+| "Defines deliverables and timeline for a specific project" | SOW |
+| "Partners agree on profit sharing and decision rights" | BPA |
+
+---
+
+## Practice Exam Strategy
+
+### Recommended Free Sources
+- **CompTIA official sample questions**: https://www.comptia.org/certifications/security#examdetails (on exam page)
+- **ExamCompass** (free, 200+ questions): https://www.examcompass.com/comptia/security-plus-certification/security-plus-practice-tests
+- **Professor Messer practice exams** (paid, ~$35, highest signal): https://www.professormesser.com/sy0-701-practice-exams/
+- **Jason Dion (Udemy)**: 6 full practice exams, frequently discounted to ~$12. Closest to real exam difficulty.
+
+### Scoring Methodology — Track by Domain, Not Total
+
+After every timed practice exam, score yourself per domain:
+
+| Domain | Exam Weight | Your Target | Action if Below 75% |
+|---|---|---|---|
+| 1.0 General Security Concepts | 12% | ≥80% | Flashcard drill — this is definitions, not scenarios |
+| 2.0 Threats, Vulnerabilities & Mitigations | 22% | ≥75% | Re-read `domain2-crypto-and-threats-homelab-notes.md` |
+| 3.0 Security Architecture | 18% | ≥75% | Re-read `domain3-iam-and-architecture-homelab-notes.md` |
+| 4.0 Security Operations | 28% | ≥75% | Re-read `domain4-ir-scenarios-expanded.md`; drill IR lifecycle ordering |
+| 5.0 GRC | 20% | ≥75% | Re-read `domain5-grc-gap-notes.md`; do formula drills from memory |
+
+A passing total score with a collapsing Domain 5 score means your safety margin is too thin — GRC must be independently above 75%.
+
+### Timing Discipline (90 questions / 90 minutes = 1 min/question average)
+
+1. **Start with PBQs (performance-based questions)** — they appear first and tend to appear complex. Allocate max 3 minutes each on first pass. Flag and skip any that exceed 3 minutes.
+2. **Work through multiple choice** at a steady ~45 sec each.
+3. **Return to flagged items** after completing the rest. You will often know the answer after finishing other questions that provide context.
+4. **Do not leave blanks** — there is no penalty for wrong answers. Guess on anything you cannot answer.
+5. **Review only flagged items** in remaining time — changing confident answers rarely helps.
+
+### PBQ Strategy
+PBQs look like simulations (drag-and-drop, firewall rule entry, log analysis). They are worth more points.
+- Read the question stem carefully — it tells you exactly what to do
+- If the tool is unfamiliar, eliminate obviously wrong answers and use process of elimination
+- PBQs that appear mid-exam (not just at the start) are the 15 unscored experimental questions — treat them seriously anyway
+
+### Remediation Loop
+```
+Practice exam → score by domain → any domain < 75%?
+  YES → Return to OCR-Dumps notes for that domain → re-read → 3-day gap → re-test
+  NO  → Wait 3 days → take another full timed exam → repeat
+```
+Two consecutive practice exams above 80% total (with no domain below 75%) = schedule the real exam.
 
 ---
 
